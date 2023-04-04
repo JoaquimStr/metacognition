@@ -1,0 +1,373 @@
+function first_level_across_final_version(params, response_type)
+%% FIRST-LEVEL ANALYSES
+% To be ran on server with the outputs from the prepare_data_final_version() function.
+
+% Original script from Johannes Fahrenfort (2018).
+
+% cfg.anti_alias = 'no'; FOR TIMING EFFECTS (see doc)
+
+% cfg.bintrain = to average training events?
+
+% run different conditions in //; to renew
+
+%% GENERAL SPECIFICATIONS OF THE EXPERIMENT
+
+% 1) Folders location
+
+server = 1; % 1 = running on server, other = running on laptop
+
+if server == 1
+    basefolder = '/home/js2715/';
+    datafolder = [basefolder, 'rds/rds-tb419-bekinschtein/Joaquim/DATA (see Yanzhis folder)/READY/across_final/CF/DROWSY/merged'];
+    scriptfolder = [basefolder, 'metacognition/'];
+    resultfolder = [basefolder, 'rds/rds-tb419-bekinschtein/Joaquim/RESULTS/across_final/'];
+else
+    basefolder = 'C:\Metacognition_Project\';
+    datafolder = [basefolder, 'DATA\across\merged'];
+    scriptfolder = [basefolder, 'SCRIPTS\metacognition'];
+    resultfolder = [basefolder, 'RESULTS_LP'];
+end
+
+% 2) Find files
+
+if server == 1
+    cd(datafolder) % go to data folder
+    filenames = {dir(sprintf('*%s*.set',params{1,1}))};
+    filenames = {filenames{1,1}.name}; 
+else
+    cd(datafolder)
+    filenames = {dir(sprintf('*eventCodes*.set'))};
+    filenames = {filenames{1,1}.name}; 
+end
+    
+cd(scriptfolder); % go to scripts folder
+
+
+% 3) GENERAL ANALYSIS CONFIGURATION SETTINGS
+cfg = [];                                          % clear the config variable 
+cfg.datadir = datafolder;                          % this is where the data files are
+cfg.model = 'BDM';                                 % backward decoding ('BDM') or forward encoding ('FEM')
+cfg.raw_or_tfr = 'raw';                            % classify raw or time frequency representations ('tfr')
+cfg.nfolds = 1;                                    % the number of folds to use 
+cfg.class_method = 'AUC';             	           % the performance measure to use
+cfg.crossclass = 'yes';                            % whether to compute temporal generalization
+cfg.balance_events = 'yes';     % for within-class balancing
+cfg.balance_classes = 'yes';    % for cross-class balancing
+cfg.channelpool = 'ALL_NOSELECTION';               % the channel selection to use 
+cfg.resample = 64;                                 % downsample (useful for temporal generalization) % 128 Hz?
+
+% the baseline correction was changed from [-.1,0] to [-.25,0] (in sec.); this might improve the data:
+% cfg.erp_baseline = [-.25,0];                       % baseline correction in sec. ('no' for no correction)
+
+%% SPECIFIC SETTINGS FOR EACH OF THE FOUR FIRST LEVEL ANALYSES
+
+if strcmp(response_type, 'PD')
+    cfg.filenames = filenames;                                  % specifies filenames (awake in this case)
+    cfg.outputdir = [resultfolder, 'PD/AWAKE'];                 % output location
+   
+    % Subject 1 *****************************************************************
+    class1.train = [21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 11;
+    class2.train = [22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 12;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 2 *****************************************************************
+    class1.train = [11 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 21;
+    class2.train = [12 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 22;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 3 *****************************************************************
+    class1.train = [11 21 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 31;
+    class2.train = [12 22 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 32;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 4 *****************************************************************
+    class1.train = [11 21 31 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 41;
+    class2.train = [12 22 32 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 42;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 5 *****************************************************************
+    class1.train = [11 21 31 41 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 51;
+    class2.train = [12 22 32 42 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 52;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 6 *****************************************************************
+    class1.train = [11 21 31 41 51 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 61;
+    class2.train = [12 22 32 42 52 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 62;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 7 *****************************************************************
+    class1.train = [11 21 31 41 51 61 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 71;
+    class2.train = [12 22 32 42 52 62 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 72;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 8 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 81;
+    class2.train = [12 22 32 42 52 62 72 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 82;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 9 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 91;
+    class2.train = [12 22 32 42 52 62 72 82 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 92;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 10 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 111 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 101;
+    class2.train = [12 22 32 42 52 62 72 82 92 112 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 102;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 11 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 121 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 111;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 122 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 112;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 12 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 131 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 121;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 132 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 122;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 13 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 141 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 131;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 142 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 132;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 14 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 151 161 171 181 191 201 211 221 231 241 251]; class1.test = 141;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 152 162 172 182 192 202 212 222 232 242 252]; class2.test = 142;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 15 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 161 171 181 191 201 211 221 231 241 251]; class1.test = 151;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 162 172 182 192 202 212 222 232 242 252]; class2.test = 152;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 16 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 171 181 191 201 211 221 231 241 251]; class1.test = 161;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 172 182 192 202 212 222 232 242 252]; class2.test = 162;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 17 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 181 191 201 211 221 231 241 251]; class1.test = 171;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 182 192 202 212 222 232 242 252]; class2.test = 172;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 18 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 191 201 211 221 231 241 251]; class1.test = 181;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 192 202 212 222 232 242 252]; class2.test = 182;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 19 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 201 211 221 231 241 251]; class1.test = 191;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 202 212 222 232 242 252]; class2.test = 192;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 20 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 211 221 231 241 251]; class1.test = 201;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 212 222 232 242 252]; class2.test = 202;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 21 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 221 231 241 251]; class1.test = 211;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 222 232 242 252]; class2.test = 212;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 22 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 231 241 251]; class1.test = 221;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 232 242 252]; class2.test = 222;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 23 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 241 251]; class1.test = 231;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 242 252]; class2.test = 232;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 24 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 251]; class1.test = 241;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 252]; class2.test = 242;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 25 *****************************************************************
+    class1.train = [11 21 31 41 51 61 71 81 91 101 111 121 131 141 151 161 171 181 191 201 211 221 231 241]; class1.test = 251;
+    class2.train = [12 22 32 42 52 62 72 82 92 102 112 122 132 142 152 162 172 182 192 202 212 222 232 242]; class2.test = 252;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+else
+    cfg.filenames = filenames;                                       % specifies filenames (awake in this case)
+    cfg.outputdir = [resultfolder, 'CF/DROWSY'];                      % output location
+    % Subject 1 *****************************************************************
+    class1.train = [23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 13;
+    class2.train = [24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 14;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 2 *****************************************************************
+    class1.train = [13 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 23;
+    class2.train = [14 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 24;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 3 *****************************************************************
+    class1.train = [13 23 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 33;
+    class2.train = [14 24 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 34;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 4 *****************************************************************
+    class1.train = [13 23 33 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 43;
+    class2.train = [14 24 34 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 44;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 5 *****************************************************************
+    class1.train = [13 23 33 43 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 53;
+    class2.train = [14 24 34 44 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 54;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 6 *****************************************************************
+    class1.train = [13 23 33 43 53 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 63;
+    class2.train = [14 24 34 44 54 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 64;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 7 *****************************************************************
+    class1.train = [13 23 33 43 53 63 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 73;
+    class2.train = [14 24 34 44 54 64 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 74;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 8 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 83;
+    class2.train = [14 24 34 44 54 64 74 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 84;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 9 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 93;
+    class2.train = [14 24 34 44 54 64 74 84 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 94;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 10 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 113 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 103;
+    class2.train = [14 24 34 44 54 64 74 84 94 114 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 104;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 11 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 123 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 113;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 124 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 114;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 12 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 133 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 123;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 134 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 124;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 13 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 143 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 133;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 144 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 134;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 14 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 153 163 173 183 193 203 213 223 233 243 253]; class1.test = 143;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 154 164 174 184 194 204 214 224 234 244 254]; class2.test = 144;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 15 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 163 173 183 193 203 213 223 233 243 253]; class1.test = 153;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 164 174 184 194 204 214 224 234 244 254]; class2.test = 154;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 16 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 173 183 193 203 213 223 233 243 253]; class1.test = 163;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 174 184 194 204 214 224 234 244 254]; class2.test = 164;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 17 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 183 193 203 213 223 233 243 253]; class1.test = 173;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 184 194 204 214 224 234 244 254]; class2.test = 174;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 18 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 193 203 213 223 233 243 253]; class1.test = 183;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 194 204 214 224 234 244 254]; class2.test = 184;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 19 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 203 213 223 233 243 253]; class1.test = 193;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 204 214 224 234 244 254]; class2.test = 194;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 20 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 213 223 233 243 253]; class1.test = 203;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 214 224 234 244 254]; class2.test = 204;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 21 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 223 233 243 253]; class1.test = 213;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 224 234 244 254]; class2.test = 214;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 22 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 233 243 253]; class1.test = 223;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 234 244 254]; class2.test = 224;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 23 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 243 253]; class1.test = 233;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 244 254]; class2.test = 234;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 24 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 253]; class1.test = 243;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 254]; class2.test = 244;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+    % Subject 25 *****************************************************************
+    class1.train = [13 23 33 43 53 63 73 83 93 103 113 123 133 143 153 163 173 183 193 203 213 223 233 243]; class1.test = 253;
+    class2.train = [14 24 34 44 54 64 74 84 94 104 114 124 134 144 154 164 174 184 194 204 214 224 234 244]; class2.test = 254;
+    cfg.class_spec{1} = cond_string(class1.train ,';', class1.test);
+    cfg.class_spec{2} = cond_string(class2.train ,';', class2.test);
+    adam_MVPA_firstlevel(cfg);
+end
+
+%% The output can now be entered in the second_level script for final decoding analyses.
